@@ -12,6 +12,7 @@ class ParkingArea(db.Model):
     address = db.Column(db.String(255), nullable=True)
     latitude = db.Column(db.Float, nullable=True)
     longitude = db.Column(db.Float, nullable=True)
+    allowed_types = db.Column(db.String(50), nullable=False, default="staff,general")  # comma-separated: staff,general,disabled
     total_slots = db.Column(db.Integer, nullable=False)
     available_slots_db = db.Column('available_slots', db.Integer, nullable=False) # Keep mapped for legacy code but use method for UML
 
@@ -21,6 +22,10 @@ class ParkingArea(db.Model):
     @property
     def unavailable_slots(self):
         return self.total_slots - self.available_slots_db
+
+    def get_allowed_types_list(self) -> list:
+        """แปลง 'staff,general' -> ['staff', 'general']"""
+        return [t.strip() for t in self.allowed_types.split(",") if t.strip()]
 
     def is_full(self, occupied_count: int) -> bool:
         """UML Method: Check if the parking area is full given an occupied count."""

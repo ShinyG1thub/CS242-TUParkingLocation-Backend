@@ -17,6 +17,7 @@ class ParkingAreaDict(TypedDict):
     address: Optional[str]
     latitude: Optional[float]
     longitude: Optional[float]
+    allowed_types: list
     total_slots: int
     available_slots: int
     unavailable_slots: int
@@ -45,6 +46,7 @@ class ParkingManager:
                 "address": area.address,
                 "latitude": area.latitude,
                 "longitude": area.longitude,
+                "allowed_types": area.get_allowed_types_list(),
                 "total_slots": area.total_slots,
                 "available_slots": area.available_slots_db,
                 "unavailable_slots": area.unavailable_slots,
@@ -63,6 +65,7 @@ class ParkingManager:
             "address": area.address,
             "latitude": area.latitude,
             "longitude": area.longitude,
+            "allowed_types": area.get_allowed_types_list(),
             "total_slots": area.total_slots,
             "available_slots": area.available_slots_db,
             "unavailable_slots": area.unavailable_slots,
