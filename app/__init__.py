@@ -43,7 +43,7 @@ def seed_mock_data():
     print("🌱 Seeding mock parking data for TUparkingLocation...")
 
     areas_data = [
-        {"name": "GYM 7",       "lat": 14.0754, "lon": 100.6041, "total_slots": 60,  "available_slots": 2,  "allowed_types": "staff,general",          "address": "Tambon Khlong Nueng, Amphoe Khlong Luang, Pathum Thani 12120"},
+        {"name": "GYM 7",       "lat": 14.0754, "lon": 100.6041, "total_slots": 29,  "available_slots": 2,  "allowed_types": "staff,general",          "address": "Tambon Khlong Nueng, Amphoe Khlong Luang, Pathum Thani 12120"},
         {"name": "Parking 1",   "lat": 14.0700, "lon": 100.6000, "total_slots": 120, "available_slots": 8,  "allowed_types": "staff,general,disabled",   "address": "99 Moo 18 Paholyothin Road, Khlong Nueng"},
         {"name": "Parking 2",   "lat": 14.0680, "lon": 100.6050, "total_slots": 80,  "available_slots": 35, "allowed_types": "staff",                   "address": "TU Main Library Zone, Pathum Thani 12120"},
         {"name": "Parking 3",   "lat": 14.0720, "lon": 100.6090, "total_slots": 45,  "available_slots": 12, "allowed_types": "staff,general",            "address": "Faculty of Engineering, Thammasat University"},
@@ -83,7 +83,9 @@ def ensure_demo_defaults():
     if not gym7:
         return
 
+    target_total_slots = 29
     target_available_slots = 2
+    gym7.total_slots = target_total_slots
     gym7.available_slots_db = target_available_slots
 
     ordered_slots = (
@@ -92,6 +94,19 @@ def ensure_demo_defaults():
         .all()
     )
     for index, slot in enumerate(ordered_slots, start=1):
+        if index > target_total_slots:
+            db.session.delete(slot)
+            continue
         slot.status = "available" if index <= target_available_slots else "occupied"
+
+    existing_count = min(len(ordered_slots), target_total_slots)
+    for index in range(existing_count + 1, target_total_slots + 1):
+        db.session.add(
+            ParkingSlot(
+                area_id=gym7.id,
+                name=f"Slot-{index:02d}",
+                status="available" if index <= target_available_slots else "occupied",
+            )
+        )
 
     db.session.commit()
