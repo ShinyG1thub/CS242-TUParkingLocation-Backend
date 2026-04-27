@@ -48,6 +48,7 @@ def seed_mock_data():
         {"name": "Parking 2",   "lat": 14.069969584365227, "lon": 100.60358519438483, "total_slots": 80,  "available_slots": 35, "allowed_types": "staff",                   "address": "TU Main Library Zone, Pathum Thani 12120"},
         {"name": "Parking 3",   "lat": 14.07121336507646,  "lon": 100.60757966766195, "total_slots": 45,  "available_slots": 12, "allowed_types": "staff,general",            "address": "Faculty of Engineering, Thammasat University"},
         {"name": "Parking 4",   "lat": 14.070634271504174, "lon": 100.60620919341392, "total_slots": 90,  "available_slots": 67, "allowed_types": "staff,disabled",          "address": "SC Building Zone, Rangsit Campus"},
+        {"name": "Parking 5",   "lat": 14.071498746657918, "lon": 100.6037244823913,  "total_slots": 60,  "available_slots": 30, "allowed_types": "staff,general,disabled",   "address": "Thammasat University, Rangsit Campus"},
     ]
 
     for data in areas_data:
