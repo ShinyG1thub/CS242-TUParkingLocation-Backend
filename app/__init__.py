@@ -42,6 +42,8 @@ def seed_mock_data():
 
     print("🌱 Seeding mock parking data for TUparkingLocation...")
 
+    # กำหนดข้อมูลพื้นที่จอดรถในมหาวิทยาลัยธรรมศาสตร์ (Rangsit Campus) พร้อมจำนวนช่องจอดและประเภทผู้ใช้ที่อนุญาต
+
     areas_data = [
         
         {"name": "หลังยิม7",     "lat": 14.069599573072148, "lon": 100.60013965939902, "total_slots": 60,  "available_slots": 2,  "allowed_types": "staff,general",          "address": "Tambon Khlong Nueng, Amphoe Khlong Luang, Pathum Thani 12120"},
