@@ -48,6 +48,12 @@ def seed_mock_data():
         {"name": "SCI1 STAFF",   "lat": 14.0680, "lon": 100.6050, "total_slots": 20, "available_slots": 10, "allowed_types": "staff",                 "address": "TU Main Library Zone, Pathum Thani 12120"},
         {"name": "GITI",   "lat": 14.0720, "lon": 100.6090, "total_slots": 30, "available_slots": 12, "allowed_types": "staff,general",         "address": "Faculty of Engineering, Thammasat University"},
         {"name": "SC3",   "lat": 14.0650, "lon": 100.6100, "total_slots": 20, "available_slots": 10, "allowed_types": "staff,disabled",        "address": "SC Building Zone, Rangsit Campus"},
+        {"name": "หลังยิม7",     "lat": 14.069599573072148, "lon": 100.60013965939902, "total_slots": 60,  "available_slots": 2,  "allowed_types": "staff,general",          "address": "Tambon Khlong Nueng, Amphoe Khlong Luang, Pathum Thani 12120"},
+        {"name": "ยิม4-6",      "lat": 14.066159446950925, "lon": 100.60454919931888, "total_slots": 120, "available_slots": 8,  "allowed_types": "staff,general,disabled",   "address": "99 Moo 18 Paholyothin Road, Khlong Nueng"},
+        {"name": "SC1",         "lat": 14.069969584365227, "lon": 100.60358519438483, "total_slots": 80,  "available_slots": 35, "allowed_types": "staff",                   "address": "TU Main Library Zone, Pathum Thani 12120"},
+        {"name": "กิติยาอาคาร", "lat": 14.07121336507646,  "lon": 100.60757966766195, "total_slots": 45,  "available_slots": 12, "allowed_types": "staff,general",            "address": "Faculty of Engineering, Thammasat University"},
+        {"name": "SC3",         "lat": 14.070634271504174, "lon": 100.60620919341392, "total_slots": 90,  "available_slots": 67, "allowed_types": "staff,disabled",          "address": "SC Building Zone, Rangsit Campus"},
+        {"name": "ศกร.",        "lat": 14.071498746657918, "lon": 100.6037244823913,  "total_slots": 60,  "available_slots": 30, "allowed_types": "staff,general,disabled",   "address": "Thammasat University, Rangsit Campus"},
     ]
 
     for data in areas_data:
@@ -76,3 +82,37 @@ def seed_mock_data():
     db.session.commit()
     print("✅ Mock data seeded successfully! Database is ready.")
 
+
+def ensure_demo_defaults():
+    """Keep demo data aligned with the current testing scenario."""
+    gym7 = ParkingArea.query.filter(ParkingArea.name.in_(["หลังยิม7", "GYM 7", "GYM-7"])).first()
+    if not gym7:
+        return
+
+    target_total_slots = 29
+    target_available_slots = 2
+    gym7.total_slots = target_total_slots
+    gym7.available_slots_db = target_available_slots
+
+    ordered_slots = (
+        ParkingSlot.query.filter_by(area_id=gym7.id)
+        .order_by(ParkingSlot.name)
+        .all()
+    )
+    for index, slot in enumerate(ordered_slots, start=1):
+        if index > target_total_slots:
+            db.session.delete(slot)
+            continue
+        slot.status = "available" if index <= target_available_slots else "occupied"
+
+    existing_count = min(len(ordered_slots), target_total_slots)
+    for index in range(existing_count + 1, target_total_slots + 1):
+        db.session.add(
+            ParkingSlot(
+                area_id=gym7.id,
+                name=f"Slot-{index:02d}",
+                status="available" if index <= target_available_slots else "occupied",
+            )
+        )
+
+    db.session.commit()
