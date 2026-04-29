@@ -42,12 +42,10 @@ def seed_mock_data():
 
     print("🌱 Seeding mock parking data for TUparkingLocation...")
 
+    # กำหนดข้อมูลพื้นที่จอดรถในมหาวิทยาลัยธรรมศาสตร์ (Rangsit Campus) พร้อมจำนวนช่องจอดและประเภทผู้ใช้ที่อนุญาต
+
     areas_data = [
-        {"name": "GYM 7",       "lat": 14.0754, "lon": 100.6041, "total_slots": 29, "available_slots": 2,  "allowed_types": "staff,general",          "address": "Tambon Khlong Nueng, Amphoe Khlong Luang, Pathum Thani 12120"},
-        {"name": "GYM 4-6",   "lat": 14.0700, "lon": 100.6000, "total_slots": 60, "available_slots": 8,  "allowed_types": "staff,general,disabled", "address": "99 Moo 18 Paholyothin Road, Khlong Nueng"},
-        {"name": "SCI1 STAFF",   "lat": 14.0680, "lon": 100.6050, "total_slots": 20, "available_slots": 10, "allowed_types": "staff",                 "address": "TU Main Library Zone, Pathum Thani 12120"},
-        {"name": "GITI",   "lat": 14.0720, "lon": 100.6090, "total_slots": 30, "available_slots": 12, "allowed_types": "staff,general",         "address": "Faculty of Engineering, Thammasat University"},
-        {"name": "SC3",   "lat": 14.0650, "lon": 100.6100, "total_slots": 20, "available_slots": 10, "allowed_types": "staff,disabled",        "address": "SC Building Zone, Rangsit Campus"},
+        
         {"name": "หลังยิม7",     "lat": 14.069599573072148, "lon": 100.60013965939902, "total_slots": 60,  "available_slots": 2,  "allowed_types": "staff,general",          "address": "Tambon Khlong Nueng, Amphoe Khlong Luang, Pathum Thani 12120"},
         {"name": "ยิม4-6",      "lat": 14.066159446950925, "lon": 100.60454919931888, "total_slots": 120, "available_slots": 8,  "allowed_types": "staff,general,disabled",   "address": "99 Moo 18 Paholyothin Road, Khlong Nueng"},
         {"name": "SC1",         "lat": 14.069969584365227, "lon": 100.60358519438483, "total_slots": 80,  "available_slots": 35, "allowed_types": "staff",                   "address": "TU Main Library Zone, Pathum Thani 12120"},
