@@ -84,7 +84,9 @@ def ensure_demo_defaults():
     if not gym7:
         return
 
+    target_total_slots = 29
     target_available_slots = 2
+    gym7.total_slots = target_total_slots
     gym7.available_slots_db = target_available_slots
 
     ordered_slots = (
@@ -93,6 +95,19 @@ def ensure_demo_defaults():
         .all()
     )
     for index, slot in enumerate(ordered_slots, start=1):
+        if index > target_total_slots:
+            db.session.delete(slot)
+            continue
         slot.status = "available" if index <= target_available_slots else "occupied"
+
+    existing_count = min(len(ordered_slots), target_total_slots)
+    for index in range(existing_count + 1, target_total_slots + 1):
+        db.session.add(
+            ParkingSlot(
+                area_id=gym7.id,
+                name=f"Slot-{index:02d}",
+                status="available" if index <= target_available_slots else "occupied",
+            )
+        )
 
     db.session.commit()
