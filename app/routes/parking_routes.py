@@ -22,7 +22,7 @@ def _get_area_or_404(
 def _refresh_area_available_slots(area: ParkingArea) -> None:
     area.available_slots_db = ParkingSlot.query.filter_by(
         area_id=area.id,
-        status="available",
+        _status="available",
     ).count()
 
 def _parse_bool(value: str | None) -> bool:

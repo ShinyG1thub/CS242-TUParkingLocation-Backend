@@ -20,7 +20,7 @@ def _get_area_or_404(
 def _refresh_area_available_slots(area: ParkingArea) -> None:
     area.available_slots_db = ParkingSlot.query.filter_by(
         area_id=area.id,
-        status="available",
+        _status="available",
     ).count()
 
 @slot_bp.route("/api/parking/areas/<int:area_id>/slots", methods=["GET"])
@@ -55,7 +55,7 @@ def update_parking_available(area_id: int) -> Tuple[Response, int] | Response:
             )
 
         ordered_slots = (
-            ParkingSlot.query.filter_by(area_id=area_id).order_by(ParkingSlot.name).all()
+            ParkingSlot.query.filter_by(area_id=area_id).order_by(ParkingSlot._name).all()
         )
         for index, slot in enumerate(ordered_slots, start=1):
             slot.status = "available" if index <= available_slots else "occupied"

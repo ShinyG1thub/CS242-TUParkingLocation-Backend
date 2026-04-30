@@ -17,6 +17,23 @@ class MLModelDict:
 class MLManager:
     """Manages all ML-related database interactions."""
 
+    def __init__(self, db_session=None):
+        """Constructor for MLManager."""
+        self._db_session = db_session or db.session
+        self._last_error = None
+
+    @property
+    def db_session(self):
+        return self._db_session
+    
+    @db_session.setter
+    def db_session(self, session):
+        self._db_session = session
+
+    @property
+    def last_error(self):
+        return self._last_error
+
     # ============= MLModel Operations =============
     
     def add_ml_model(
@@ -62,7 +79,7 @@ class MLManager:
     def set_active_model(self, model_id: int) -> bool:
         """Set a model as the active production model."""
         # Deactivate all other models
-        MLModel.query.update({MLModel.is_active: False})
+        MLModel.query.update({MLModel._is_active: False})
         
         # Activate the selected model
         model = MLModel.query.get(model_id)
