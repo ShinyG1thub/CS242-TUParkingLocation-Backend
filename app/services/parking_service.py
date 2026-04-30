@@ -1,18 +1,12 @@
-"""Business logic using SQLAlchemy models.
-
-This layer handles database interactions and cleanly returns 
-standardized dictionaries to the API controller, now structured
-within a ParkingManager class as defined by the UML.
-"""
-from typing import List, Optional, TypedDict
+from typing import List, Optional
 import json
+from datetime import datetime, timezone
 
 from ..extensions import db
 from ..models.parking import ParkingArea, ParkingSlot
 
 
 class ParkingAreaDict:
-    """Class representing parking area data for API transfer."""
     def __init__(self, **kwargs):
         self._id = kwargs.get('id')
         self._name = kwargs.get('name')
@@ -24,11 +18,7 @@ class ParkingAreaDict:
         self._available_slots = kwargs.get('available_slots', 0)
         self._unavailable_slots = kwargs.get('unavailable_slots', 0)
 
-    @property
-    def id(self): return self._id
-
     def to_dict(self):
-        """Complex logic: Convert object state to a standardized dictionary."""
         return {
             "id": self._id,
             "name": self._name,
@@ -43,7 +33,6 @@ class ParkingAreaDict:
 
 
 class ParkingSlotDict:
-    """Class representing parking slot data for API transfer."""
     def __init__(self, **kwargs):
         self._id = kwargs.get('id')
         self._area_id = kwargs.get('area_id')
@@ -51,7 +40,6 @@ class ParkingSlotDict:
         self._status = kwargs.get('status')
 
     def to_dict(self):
-        """Complex logic: Format slot data with status-specific decorations."""
         return {
             "id": self._id,
             "area_id": self._area_id,
@@ -61,26 +49,18 @@ class ParkingSlotDict:
 
 
 class ParkingManager:
-    """Manages all interactions with Parking database models."""
 
     def __init__(self, db_name: str = "sqlite:///tu_parking.db"):
         self._db_name = db_name
 
-    @property
-    def db_name(self):
-        return self._db_name
-    
-    @db_name.setter
-    def db_name(self, value):
-        self._db_name = value
-
-    # Complex logic method for the manager
+    # =========================
+    # REPORT
+    # =========================
     def generate_occupancy_report(self) -> dict:
-        """Aggregates occupancy data across all areas into a complex report."""
         areas = ParkingArea.query.all()
         total_slots = sum(a.total_slots for a in areas)
         total_available = sum(a.available_slots_db for a in areas)
-        
+
         return {
             "summary": {
                 "total_areas": len(areas),
@@ -91,10 +71,14 @@ class ParkingManager:
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
 
+    # =========================
+    # GET
+    # =========================
+    
     def get_all_parking_areas(self) -> List[dict]:
-        """Retrieve all parking areas with calculated slot bounds."""
-        areas: List[ParkingArea] = ParkingArea.query.all()
+        areas = ParkingArea.query.all()
         results = []
+
         for area in areas:
             data = ParkingAreaDict(
                 id=area.id,
@@ -108,13 +92,14 @@ class ParkingManager:
                 unavailable_slots=area.unavailable_slots,
             )
             results.append(data.to_dict())
+
         return results
 
     def get_parking_area_by_id(self, area_id: int) -> Optional[dict]:
-        """Retrieve a single parking area by its ID."""
-        area: Optional[ParkingArea] = ParkingArea.query.get(area_id)
+        area = ParkingArea.query.get(area_id)
         if not area:
             return None
+
         data = ParkingAreaDict(
             id=area.id,
             name=area.name,
@@ -129,32 +114,46 @@ class ParkingManager:
         return data.to_dict()
 
     def get_parking_slots(self, area_id: int) -> List[dict]:
-        """Retrieve all slots belonging to a specific parking area."""
-        slots: List[ParkingSlot] = ParkingSlot.query.filter_by(area_id=area_id).order_by(ParkingSlot._name).all()
-        results = []
-        for s in slots:
-            data = ParkingSlotDict(
+        slots = ParkingSlot.query.filter_by(area_id=area_id)\
+            .order_by(ParkingSlot._name).all()
+
+        return [
+            ParkingSlotDict(
                 id=s.id,
                 area_id=s.area_id,
                 name=s.name,
                 status=s.status
-            )
-            results.append(data.to_dict())
-        return results
+            ).to_dict()
+            for s in slots
+        ]
 
-    # UML Required Methods
-    def add_parking_area(self, name: str, total_slots: int, address: str = None, lat: float = None, lon: float = None) -> ParkingArea:
-        area = ParkingArea(name=name, address=address, latitude=lat, longitude=lon, total_slots=total_slots, available_slots_db=total_slots)
+    # =========================
+    # CREATE
+    # =========================
+    
+    def add_parking_area(self, name: str, total_slots: int, address=None, lat=None, lon=None):
+        area = ParkingArea(
+            name=name,
+            address=address,
+            latitude=lat,
+            longitude=lon,
+            total_slots=total_slots,
+            available_slots_db=total_slots
+        )
         db.session.add(area)
         db.session.commit()
         return area
 
-    def add_parking_slot(self, area_id: int, name: str, status: str = 'available') -> ParkingSlot:
+    def add_parking_slot(self, area_id: int, name: str, status: str = 'available'):
         slot = ParkingSlot(area_id=area_id, name=name, status=status)
         db.session.add(slot)
         db.session.commit()
         return slot
 
+    # =========================
+    # UPDATE
+    # =========================
+    
     def update_slot(self, slot_id: int, new_status: str) -> bool:
         slot = ParkingSlot.query.get(slot_id)
         if slot:
@@ -163,6 +162,97 @@ class ParkingManager:
             return True
         return False
 
+    def update_available_slots(self, area_id: int, available_slots: int):
+        area = ParkingArea.query.get(area_id)
+        if not area:
+            raise ValueError("Parking area not found")
+
+        if not isinstance(available_slots, int):
+            raise ValueError("available_slots must be integer")
+
+        if available_slots < 0 or available_slots > area.total_slots:
+            raise ValueError(f"available_slots must be between 0 and {area.total_slots}")
+
+        slots = ParkingSlot.query.filter_by(area_id=area_id)\
+            .order_by(ParkingSlot._name).all()
+
+        for index, slot in enumerate(slots, start=1):
+            if index <= available_slots:
+                slot.update_status("available")
+            else:
+                slot.update_status("occupied")
+
+        area.available_slots_db = available_slots
+        db.session.commit()
+
+        return {
+            "message": f"Updated {area.name}: {available_slots} slots available",
+            "area": self.get_parking_area_by_id(area_id),
+            "slots": self.get_parking_slots(area_id),
+        }
+
+    def update_single_slot(self, area_id: int, slot_id: int, new_status: str):
+        slot = ParkingSlot.query.get(slot_id)
+        if not slot or slot.area_id != area_id:
+            raise ValueError("Slot not found")
+
+        old_status = slot.status
+        slot.update_status(new_status)
+
+        area = ParkingArea.query.get(area_id)
+        area.available_slots_db = ParkingSlot.query.filter_by(
+            area_id=area_id, _status="available"
+        ).count()
+
+        db.session.commit()
+
+        return {
+            "message": f"Slot {slot.name}: {old_status} -> {new_status}",
+            "slot": {
+                "id": slot.id,
+                "name": slot.name,
+                "status": slot.status,
+            },
+            "area": self.get_parking_area_by_id(area_id),
+            "slots": self.get_parking_slots(area_id),
+        }
+
+    def sync_slots_from_ml(self, area_id: int, analyzed_slots: list):
+        area = ParkingArea.query.get(area_id)
+        if not area:
+            raise ValueError("Parking area not found")
+
+        ParkingSlot.query.filter_by(area_id=area_id).delete()
+
+        for i, slot in enumerate(analyzed_slots, start=1):
+            db.session.add(ParkingSlot(
+                area_id=area_id,
+                name=f"Slot-{i:02d}",
+                status=slot["status"]
+            ))
+
+        db.session.flush()
+
+        total_slots = len(analyzed_slots)
+        available_slots = sum(
+            1 for s in analyzed_slots if s["status"] == "available"
+        )
+
+        area.total_slots = total_slots
+        area.available_slots_db = available_slots
+
+        db.session.commit()
+
+        return {
+            "applied": True,
+            "synced_slots": total_slots,
+            "message": f"Database updated with {total_slots} detected slots"
+        }
+
+    # =========================
+    # DELETE
+    # =========================
+    
     def delete_slot(self, slot_id: int) -> bool:
         slot = ParkingSlot.query.get(slot_id)
         if slot:
@@ -172,10 +262,11 @@ class ParkingManager:
         return False
 
     def get_all_slots_json(self) -> str:
-        """Returns JSON representation of all slots."""
-        slots: List[ParkingSlot] = ParkingSlot.query.all()
-        slots_list = [{"id": s.id, "area_id": s.area_id, "name": s.name, "status": s.status} for s in slots]
-        return json.dumps(slots_list)
+        slots = ParkingSlot.query.all()
+        return json.dumps([
+            {"id": s.id, "area_id": s.area_id, "name": s.name, "status": s.status}
+            for s in slots
+        ])
 
-# Instantiate the singleton manager for routes to use
+
 parking_manager = ParkingManager()
