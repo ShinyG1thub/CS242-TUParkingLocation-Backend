@@ -46,7 +46,7 @@ def seed_mock_data():
 
     areas_data = [
         
-        {"name": "หลังยิม7",     "lat": 14.069599573072148, "lon": 100.60013965939902, "total_slots": 60,  "available_slots": 2,  "allowed_types": "staff,general",          "address": "Tambon Khlong Nueng, Amphoe Khlong Luang, Pathum Thani 12120"},
+        {"name": "หลังยิม7",     "lat": 14.069599573072148, "lon": 100.60013965939902, "total_slots": 29,  "available_slots": 2,  "allowed_types": "staff,general",          "address": "Tambon Khlong Nueng, Amphoe Khlong Luang, Pathum Thani 12120"},
         {"name": "ยิม4-6",      "lat": 14.066159446950925, "lon": 100.60454919931888, "total_slots": 120, "available_slots": 8,  "allowed_types": "staff,general,disabled",   "address": "99 Moo 18 Paholyothin Road, Khlong Nueng"},
         {"name": "SC1",         "lat": 14.069969584365227, "lon": 100.60358519438483, "total_slots": 80,  "available_slots": 35, "allowed_types": "staff",                   "address": "TU Main Library Zone, Pathum Thani 12120"},
         {"name": "กิติยาอาคาร", "lat": 14.07121336507646,  "lon": 100.60757966766195, "total_slots": 45,  "available_slots": 12, "allowed_types": "staff,general",            "address": "Faculty of Engineering, Thammasat University"},
